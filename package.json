@@ -1,0 +1,35 @@
+{
+  "name": "@yottameta/yotta-vetter",
+  "version": "0.1.0",
+  "description": "元审 —— 安装任何技能前的安全审查协议：四阶段 checklist + 轻量 checker，与元安联动深度扫描。",
+  "license": "MIT",
+  "keywords": [
+    "agent-skills",
+    "yotta-vetter",
+    "skill-vetting",
+    "security",
+    "supply-chain",
+    "yottaskills"
+  ],
+  "files": [
+    "SKILL.md",
+    "LICENSE",
+    "NOTICE",
+    "README.md",
+    "CHANGELOG.md",
+    "install.sh",
+    "references",
+    "scripts",
+    "bin"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YottaMeta/yotta-vetter.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": {
+    "yotta-vetter": "bin/install.js"
+  }
+}

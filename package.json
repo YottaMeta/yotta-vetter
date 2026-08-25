@@ -1,6 +1,6 @@
 {
   "name": "@yottameta/yotta-vetter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "元审 —— 安装任何技能前的安全审查协议：四阶段 checklist + 轻量 checker，与元安联动深度扫描。",
   "license": "MIT",
   "keywords": [

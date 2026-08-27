@@ -1,6 +1,6 @@
 ---
 name: yotta-vetter
-version: 0.1.2
+version: 0.1.3
 description: 元审 —— 安装任何技能前的安全审查协议：四阶段 checklist（来源→代码→权限→风险）+ 轻量 checker，与元安联动深度扫描。触发：安装/评估任何技能前、从市场或 GitHub 获取技能、审查他人分享的技能、任何「要装未知代码」的场景；或用户说 审查/审查技能/vetting/技能安全审查/检查技能 等。边界：checker 只做初审与报告，结论需人工确认；绝不代替最终决策。
 license: MIT
 ---

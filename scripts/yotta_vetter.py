@@ -48,7 +48,7 @@ _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE))
 import vetter_rules  # noqa: E402
 
-VERSION = "0.1.0"
+VERSION = "0.1.3"
 TOOL_NAME = "yotta-vetter"
 MAX_FILE_SIZE = 1_000_000
 MAX_LINE_LEN = vetter_rules.MAX_LINE_LEN

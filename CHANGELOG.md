@@ -1,5 +1,16 @@
 # 更新日志
 
+## v0.1.3 (2026-08-28)
+
+中英双语 README 对齐 + 版本统一（老张拍板「英文门面 + 中文全档」）：
+
+- **README.md 改为英文**：作为 GitHub / npm / ClawHub 首页的英文门面（翻译 + 精简，覆盖定位 / 核心价值 / 四阶段协议 / 结论判定 / 使用示例 / 安装 / 升级卸载 / 常见问题 / 相关技能 / 边界 / 开发校验全流程）。
+- **新增 README.zh-CN.md**：原中文完整主文档整体平移，顶部加语言切换链接。
+- **移除 npx --agent codex 安装行**：README 安装方式一不再出现 `npx -y @yottameta/... --agent <name>`（固定智能体名，违反安装规范；npx 用 -g 或 --dir，--agent 仅 install.sh 用）。
+- **版本统一 0.1.3**：此前 package.json=0.1.2、CHANGELOG 顶部=0.1.1、引擎 VERSION=0.1.0 不一致；本版统一为 0.1.3（package.json / SKILL frontmatter / 引擎 VERSION / CHANGELOG / 测试断言全对齐）。
+- **package.json**：description 改英文；files 加 README.zh-CN.md。
+- 边界（B 方案）：references / CHANGELOG / 测试注释不翻译；SKILL 触发描述保持中文。
+
 ## v0.1.1 (2026-08-26)
 
 README 按标准补全：新增「这是什么 / 核心价值 / 核心优势 / 四阶段协议 / 结论判定 / 常见问题 / 相关技能 / 升级卸载」等章节，与 YottaMeta 技能矩阵 README 标准对齐；无功能变更。

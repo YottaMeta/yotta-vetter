@@ -48,7 +48,7 @@ _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE))
 import vetter_rules  # noqa: E402
 
-VERSION = "0.1.3"
+VERSION = "0.1.4"
 TOOL_NAME = "yotta-vetter"
 MAX_FILE_SIZE = 1_000_000
 MAX_LINE_LEN = vetter_rules.MAX_LINE_LEN
@@ -125,7 +125,7 @@ def collect_files(root):
             try:
                 if p.suffix.lower() not in TEXT_EXTENSIONS and p.name.lower() not in DOTFILE_NAMES:
                     continue
-                if p.name in ("audit_rules.py", "vetter_rules.py"):
+                if p.name in ("audit_rules.py", "vetter_rules.py", "verify_rules.py"):
                     continue  # 签名数据文件（规则表）
                 if p.stat().st_size > MAX_FILE_SIZE:
                     continue

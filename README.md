@@ -156,4 +156,4 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ## License
 
-[MIT](./LICENSE) © YottaMeta. "Yuanshen" / "yotta-vetter" and the YottaMeta family names (yotta-* prefix) are YottaMeta brand identifiers; derived works must not reuse them, see [NOTICE](./NOTICE). The review protocol references open-source skill-vetter style skills; the implementation is YottaMeta's own.
+[MIT](./LICENSE) © YottaMeta. "Yuanshen" / "yotta-vetter" and the YottaMeta family names (yotta-* prefix) are YottaMeta brand identifiers; derived works must not reuse them, see [NOTICE](./NOTICE). YottaMeta original implementation (zero-dependency, self-developed).

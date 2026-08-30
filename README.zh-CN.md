@@ -142,4 +142,4 @@ bash install.sh --list           # 列出智能体 -> 默认目录
 
 ## 许可证
 
-MIT © YottaMeta —— 详见 [LICENSE](./LICENSE)。品牌声明见 [NOTICE](./NOTICE)。上游来源致谢：审查协议参考开源社区 skill-vetter 类技能思路，实现为 YottaMeta 自有。
+MIT © YottaMeta —— 详见 [LICENSE](./LICENSE)。品牌声明见 [NOTICE](./NOTICE)。来源声明：本技能由 YottaMeta 全新实现（零依赖自研 + 中文教学）。

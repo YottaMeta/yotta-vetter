@@ -1,5 +1,14 @@
 # 更新日志
 
+## v0.2.2 (2026-08-30)
+
+安全家族检测能力增强 + 措辞规范（与元信 / 元安 v0.2.2 对齐）：
+
+- **报告升级（双视角）**：新增安全健康度评分（0-100） + 威胁捕获模型视图（8 检测点逐类 verdict） + 行为项（13 项），文本 / Markdown / JSON 三格式输出。
+- **规则同步**：vetter_rules 同步元安权威源至 61 条（新增 路径穿越 / MCP 工具面命令执行 / MCP 工具面任意文件读写 检测器）。
+- **措辞规范**：正文不再写版本号；统一对外表述（含代码注释与报告输出）。
+- 测试：12 / 12 全绿（Python 3.8 / 3.13）。
+
 ## v0.1.5 (2026-08-29)
 
 - 安装方式统一为四方式（对齐发布规范 §3.3.1）：方式一 `npx -y @yottameta/yotta-vetter --agent <name>` / `--dir <dir>`（推荐，走 npm 源）；方式二 `git clone https://github.com/YottaMeta/yotta-vetter.git`；方式三 GitHub Download ZIP；方式四 `bash install.sh --agent/--dir/--list`。移除 `npx skills` 与 `-g` 推荐；中英双 README 安装节同步。
@@ -32,7 +41,7 @@ README 按标准补全：新增「这是什么 / 核心价值 / 核心优势 / �
 
 ## v0.1.0 (2026-08-26)
 
-YottaMeta 自有实现首版（重写自第三方技术包 skill-vetter v2.0.0，已完全重写，无上游代码）：
+YottaMeta 自有实现首版（零依赖自研 + 中文教学）：
 
 - check：四阶段初审（来源/代码/权限/风险）+ 危险模式规则扫描 + SKILL VETTING REPORT 报告。
 - 危险模式规则与 yotta-security-audit（元安）共用（vetter_rules.py 为 audit_rules.py 的同步副本）。
@@ -41,4 +50,4 @@ YottaMeta 自有实现首版（重写自第三方技术包 skill-vetter v2.0.0�
 - 输出：文本 / --json / --report report.md（SKILL VETTING REPORT 模板，含结论/决策记录/时间戳/审查者）。
 - 零依赖（Python 3.8+ 标准库），Windows + Linux 通用，UTF-8 加固（GBK 控制台不崩）。
 - exit code 语义与元安一致：0=干净/仅 low，1=medium，2=high，3=critical，4=错误。
-- 版权：YottaMeta 纯自有 MIT + NOTICE 品牌声明；README 一行上游致谢。
+- 版权：YottaMeta 纯自有 MIT + NOTICE 品牌声明。

@@ -48,7 +48,7 @@ _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE))
 import vetter_rules  # noqa: E402
 
-VERSION = "0.1.5"
+VERSION = "0.2.2"
 TOOL_NAME = "yotta-vetter"
 MAX_FILE_SIZE = 1_000_000
 MAX_LINE_LEN = vetter_rules.MAX_LINE_LEN
@@ -198,7 +198,7 @@ def inventory_checks(root, files):
                     "Inventory", "low", "permissions", str(p),
                     description="非脚本文件带可执行位", confidence=40,
                     rule_id="PERM-002"))
-    # 符号链接（可能指向外部）
+    # 符号链接（可能指向目录外）
     for p in files:
         if p.is_symlink():
             findings.append(Finding("Inventory", "medium", "permissions", str(p),
@@ -265,6 +265,55 @@ def verdict_for(worst):
         return "REVIEW REQUIRED", "发现 medium 级风险，建议复核后安装"
     return "SAFE TO INSTALL", "未发现明显风险（仍建议按协议完整审查）"
 
+# ── 威胁捕获模型视图（2026-08-30 增强：8 检测点 + 13 行为项）────────
+_SEV_WEIGHT = {"critical": 40, "high": 20, "medium": 8, "low": 1, "info": 0}
+_SEV_CAPS = {"critical": 2, "high": 4, "medium": 6, "low": 10, "info": 0}
+
+
+def _health_score(findings):
+    counts = {}
+    for f in findings:
+        counts[f.severity] = counts.get(f.severity, 0) + 1
+    score = 100
+    for sev, w in _SEV_WEIGHT.items():
+        score -= w * min(counts.get(sev, 0), _SEV_CAPS[sev])
+    return max(0, int(round(score)))
+
+
+def _taxonomy_view(findings):
+    hits = {}
+    for f in findings:
+        key = vetter_rules.DETECTOR_TO_TAXONOMY.get(f.detector, "other")
+        hits.setdefault(key, []).append(f)
+    out = []
+    for key in vetter_rules.TAXONOMY_ORDER:
+        items = hits.get(key, [])
+        name = vetter_rules.THREAT_TAXONOMY.get(key, key)
+        sev = "info"
+        for f in items:
+            if _SEV_WEIGHT.get(f.severity, 0) > _SEV_WEIGHT.get(sev, 0):
+                sev = f.severity
+        if not items:
+            verdict = "n/a"
+        elif sev in ("critical", "high"):
+            verdict = "danger"
+        elif sev == "medium":
+            verdict = "suspicious"
+        else:
+            verdict = "safe"
+        out.append({"name": name, "verdict": verdict, "count": len(items)})
+    return out
+
+
+def _behavior_view(findings):
+    observed = {}
+    for f in findings:
+        for b in vetter_rules.DETECTOR_TO_BEHAVIORS.get(f.detector, ()):
+            observed[b] = observed.get(b, 0) + 1
+    return [{"behavior": b, "observed": observed.get(b, 0)}
+            for b in vetter_rules.BEHAVIORS]
+
+
 # ── 输出（文本 / JSON / 报告）──────────────────────────────────────────────
 
 def fmt_report(findings, scope):
@@ -289,6 +338,15 @@ def fmt_report(findings, scope):
     lines.append("风险等级: %s" % _worst(findings).upper())
     lines.append("结论: %s" % verdict)
     lines.append("决策记录: %s" % note)
+    lines.append("安全健康度评分: %d/100" % _health_score(findings))
+    lines.append("")
+    lines.append("威胁捕获模型（8 类）：")
+    for v in _taxonomy_view(findings):
+        lines.append("  %-16s %-11s %d" % (v["name"], v["verdict"], v["count"]))
+    lines.append("")
+    observed = [b["behavior"] for b in _behavior_view(findings) if b["observed"]]
+    lines.append("行为项（13 项）：%s" % (
+        "、".join(observed) if observed else "未观察到明显系统行为"))
     lines.append("")
     if findings:
         lines.append("发现:")
@@ -332,6 +390,20 @@ def write_report_md(path, findings, scope):
     lines.append("|---|---|")
     for sev in _SEVERITY_ORDER:
         lines.append("| %s | %d |" % (sev.upper(), counts[sev]))
+    lines.append("")
+    lines.append("**安全健康度评分：%d/100**" % _health_score(findings))
+    lines.append("")
+    lines.append("## 威胁捕获模型视图（8 类）")
+    lines.append("")
+    lines.append("| 检测点 | verdict | 命中 |")
+    lines.append("|---|---|---|")
+    for v in _taxonomy_view(findings):
+        lines.append("| %s | %s | %d |" % (v["name"], v["verdict"], v["count"]))
+    lines.append("")
+    lines.append("## 行为项（13 项）")
+    lines.append("")
+    observed = [b["behavior"] for b in _behavior_view(findings) if b["observed"]]
+    lines.append("观察到：%s" % ("、".join(observed) if observed else "未观察到明显系统行为"))
     lines.append("")
     if findings:
         lines.append("## 发现")
@@ -388,6 +460,11 @@ def cmd_check(args):
             "tool": TOOL_NAME, "version": VERSION, "scope": scope,
             "summary": _summary(findings),
             "findings": [f.to_dict() for f in findings],
+            "threat": {
+                "health_score": _health_score(findings),
+                "taxonomy": _taxonomy_view(findings),
+                "behaviors": _behavior_view(findings),
+            },
         }, indent=2, ensure_ascii=False))
     else:
         print(fmt_report(findings, scope))

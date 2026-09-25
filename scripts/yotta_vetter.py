@@ -24,6 +24,7 @@ exit code 语义（与元安一致）：
   python3 yotta_vetter.py source github:YottaMeta/yotta-memory
 """
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -48,7 +49,7 @@ _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE))
 import vetter_rules  # noqa: E402
 
-VERSION = "0.2.5"
+VERSION = "0.2.6"
 TOOL_NAME = "yotta-vetter"
 MAX_FILE_SIZE = 1_000_000
 MAX_LINE_LEN = vetter_rules.MAX_LINE_LEN
@@ -116,6 +117,51 @@ def _is_binary(head):
     return b"\x00" in head[:8192]
 
 
+# v0.2.6：签名数据文件（家族规则表）白名单 —— 相对路径 + CRLF 归一化 SHA-256 双绑定。
+# 任一条不满足即正常扫描（fail-closed），杜绝「改名即豁免」。
+PUBLISHED_SIGNATURES = {
+    "scripts/verify_rules.py":
+        "8d8c128911b05b24413cc3aec8a2d1c36c1ccf66f656330f723cd68718bda8bd",
+    "scripts/vetter_rules.py":
+        "fc5bad6a7705f9fde60f4fdaf540a3aaa6490448d1fe22ed264e3f812c8ba092",
+    "scripts/audit_rules.py":
+        "475ba1daee436589997260291917126218ae7cae572d16eb59459ca5a2192d23",
+    "scripts/hardening_rules.py":
+        "6b9cbdaa106ae7f5827e60f83c016c237d4cd28785426930abc24cde00bcf5c7",
+    "scripts/guardian_rules.py":
+        "a9fc0da3e0344d485b20c55378b58bc81d78ecbb28a7f2b3bd44bcbed06aebe3",
+}
+
+
+def _sha256_normalized(path):
+    """CRLF 归一化后的 SHA-256（跨 Windows / Linux 检出结果一致）。"""
+    try:
+        data = path.read_bytes().replace(b"\r\n", b"\n")
+    except OSError:
+        return ""
+    return hashlib.sha256(data).hexdigest()
+
+
+def is_published_signature_data(root, path):
+    """判断文件是否为「已发布家族规则表」：路径受限 + 摘要一致（摘要为最终判据）。
+
+    路径接受 `scripts/<规则表名>`，以及「扫描根就是 scripts 目录」时的 `<规则表名>`
+    形式（自扫 scripts/ 子目录的场景）。两条路径都必须命中已发布摘要，改名 / 改内容
+    一律照常扫描。
+    """
+    try:
+        rel = path.relative_to(root).as_posix()
+    except ValueError:
+        rel = path.name
+    expected = PUBLISHED_SIGNATURES.get(rel)
+    if not expected and Path(root).name.lower() == "scripts":
+        # 直接扫描 scripts/ 子目录（自扫场景）：按 scripts/<规则表名> 复核
+        expected = PUBLISHED_SIGNATURES.get("scripts/" + path.name)
+    if not expected:
+        return False
+    return _sha256_normalized(path) == expected
+
+
 def collect_files(root):
     files = []
     for dirpath, dirnames, filenames in os.walk(str(root)):
@@ -125,8 +171,10 @@ def collect_files(root):
             try:
                 if p.suffix.lower() not in TEXT_EXTENSIONS and p.name.lower() not in DOTFILE_NAMES:
                     continue
-                if p.name in ("audit_rules.py", "vetter_rules.py", "verify_rules.py", "hardening_rules.py"):
-                    continue  # 签名数据文件（规则表）
+                # v0.2.6：签名数据文件豁免改为「路径 + 摘要绑定」。旧行为只按文件名跳过，
+                # 攻击方把恶意文件命名成 audit_rules.py / verify_rules.py 即可免扫（T09）。
+                if is_published_signature_data(Path(root), p):
+                    continue
                 if p.stat().st_size > MAX_FILE_SIZE:
                     continue
             except OSError:

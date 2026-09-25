@@ -17,6 +17,8 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 SCRIPT = HERE / "yotta_vetter.py"
 FIX = HERE.parent.parent.parent / ".tmp" / "audit-fixtures"
+sys.path.insert(0, str(HERE))
+import yotta_vetter as yv  # noqa: E402
 
 
 def run_cli(args, env=None):
@@ -103,6 +105,43 @@ class VetterCliTest(unittest.TestCase):
             capture_output=True, env=env, timeout=60)
         self.assertEqual(r.returncode, 0, r.stderr.decode("gbk", errors="replace"))
         self.assertNotIn(b"UnicodeEncodeError", r.stderr)
+
+
+class SignatureDataBindingTest(unittest.TestCase):
+    """v0.2.6：规则表豁免 = 路径 + 摘要绑定；改名 / 改内容 / 换目录都不再免扫。"""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def _write(self, rel, text):
+        p = self.root / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(text, encoding="utf-8")
+        return p
+
+    def test_fake_rule_table_is_scanned(self):
+        p = self._write("scripts/audit_rules.py", "print('fake rule table')\n")
+        self.assertIn(p, yv.collect_files(self.root))
+
+    def test_published_rule_table_exempt(self):
+        src = HERE / "vetter_rules.py"
+        p = self._write("scripts/vetter_rules.py", src.read_text(encoding="utf-8"))
+        self.assertNotIn(p, yv.collect_files(self.root))
+
+    def test_wrong_directory_not_exempt(self):
+        src = HERE / "vetter_rules.py"
+        p = self._write("vetter_rules.py", src.read_text(encoding="utf-8"))
+        self.assertIn(p, yv.collect_files(self.root))
+
+    def test_modified_content_not_exempt(self):
+        src = HERE / "vetter_rules.py"
+        text = src.read_text(encoding="utf-8") + "\n# tampered\n"
+        p = self._write("scripts/vetter_rules.py", text)
+        self.assertIn(p, yv.collect_files(self.root))
 
 
 if __name__ == "__main__":

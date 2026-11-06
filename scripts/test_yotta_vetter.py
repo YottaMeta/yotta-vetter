@@ -8,6 +8,7 @@ V3 元安联动、source 来源检查（格式/404 降级）、GBK 控制台加�
 """
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -19,6 +20,7 @@ SCRIPT = HERE / "yotta_vetter.py"
 FIX = HERE.parent.parent.parent / ".tmp" / "audit-fixtures"
 sys.path.insert(0, str(HERE))
 import yotta_vetter as yv  # noqa: E402
+import vetter_rules as vr  # noqa: E402
 
 
 def run_cli(args, env=None):
@@ -142,6 +144,21 @@ class SignatureDataBindingTest(unittest.TestCase):
         text = src.read_text(encoding="utf-8") + "\n# tampered\n"
         p = self._write("scripts/vetter_rules.py", text)
         self.assertIn(p, yv.collect_files(self.root))
+
+
+class Pri001RegexTest(unittest.TestCase):
+    def test_regular_modes_do_not_match(self):
+        rule = next(r for r in vr.PATTERN_RULES if r.id == "PRI-001")
+        for sample in ("chmod " + "600 x", "chmod " + "644 x", "chmod " + "700 x",
+                       "chmod " + "755 x", "chmod " + "777 x"):
+            self.assertIsNone(re.search(rule.pattern, sample), sample)
+
+    def test_special_bits_match(self):
+        rule = next(r for r in vr.PATTERN_RULES if r.id == "PRI-001")
+        for sample in ("chmod " + "4755 x", "chmod " + "2755 x", "chmod " + "1777 x",
+                       "chmod " + "6755 x", "chmod " + "+s x", "chmod " + "u+s x",
+                       "chmod " + "+t x"):
+            self.assertIsNotNone(re.search(rule.pattern, sample), sample)
 
 
 if __name__ == "__main__":

@@ -49,7 +49,7 @@ _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE))
 import vetter_rules  # noqa: E402
 
-VERSION = "0.2.8"
+VERSION = "0.2.9"
 TOOL_NAME = "yotta-vetter"
 MAX_FILE_SIZE = 1_000_000
 MAX_LINE_LEN = vetter_rules.MAX_LINE_LEN
@@ -121,15 +121,15 @@ def _is_binary(head):
 # 任一条不满足即正常扫描（fail-closed），杜绝「改名即豁免」。
 PUBLISHED_SIGNATURES = {
     "scripts/verify_rules.py":
-        "8d8c128911b05b24413cc3aec8a2d1c36c1ccf66f656330f723cd68718bda8bd",
+        "f060ec1e9d339865db577c074b51b49841a44657f3bea863dbc72ced2d5eed83",
     "scripts/vetter_rules.py":
-        "fc5bad6a7705f9fde60f4fdaf540a3aaa6490448d1fe22ed264e3f812c8ba092",
+        "ed0959784c3afc09562686aaac8a0d17679987dbd49a06bedccee2d05f17424c",
     "scripts/audit_rules.py":
-        "475ba1daee436589997260291917126218ae7cae572d16eb59459ca5a2192d23",
+        "231e87341816a48fa47573cd4e7a9ecdeb1535c04cab04a4d569443c9db54a8d",
     "scripts/hardening_rules.py":
-        "6b9cbdaa106ae7f5827e60f83c016c237d4cd28785426930abc24cde00bcf5c7",
+        "a5d6a14323633ba59f0005e655ec3b0acf5be300db8889fd3fb875cc8c2d9fba",
     "scripts/guardian_rules.py":
-        "a9fc0da3e0344d485b20c55378b58bc81d78ecbb28a7f2b3bd44bcbed06aebe3",
+        "d83674b9dc41c8f6290964b9d6339dce3840f9c0df564856513bc7f1a9bd94d8",
 }
 
 

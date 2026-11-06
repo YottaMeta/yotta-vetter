@@ -13,11 +13,16 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 SCRIPT = HERE / "yotta_vetter.py"
-FIX = HERE.parent.parent.parent / ".tmp" / "audit-fixtures"
+FIXTURE_ARCHIVE = HERE / "testdata" / "audit-fixtures.zip"
+_FIXTURE_TMP = tempfile.TemporaryDirectory(prefix="yotta-vetter-fixtures-")
+FIX = Path(_FIXTURE_TMP.name)
+with zipfile.ZipFile(FIXTURE_ARCHIVE) as _fixture_zip:
+    _fixture_zip.extractall(FIX)
 sys.path.insert(0, str(HERE))
 import yotta_vetter as yv  # noqa: E402
 import vetter_rules as vr  # noqa: E402
